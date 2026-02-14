@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Agent RAG System</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --secondary-gradient: linear-gradient(135deg, #3b82f6 0%, #2dd4bf 100%);
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-color: #1f2937;
+            --text-light: #6b7280;
+            --border-radius: 16px;
+            --box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --input-border: #e5e7eb;
+            --input-focus: #8b5cf6;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Center vertically too */
+            min-height: 100vh;
+            box-sizing: border-box;
+            background-attachment: fixed;
+            /* Keep gradient fixed on scroll */
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            backdrop-filter: blur(10px);
+            /* Glassmorphism effect */
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(40px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            /* More stylish font for headers */
+            text-align: center;
+            color: #111827;
+            margin-bottom: 8px;
+            font-weight: 700;
+            font-size: 2.5rem;
+            background: var(--primary-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+            width: 100%;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: var(--text-light);
+            margin-top: 0;
+            margin-bottom: 32px;
+            font-size: 1.1rem;
+        }
+
+        .input-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.95rem;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid var(--input-border);
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            height: 120px;
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+            background-color: #f9fafb;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--input-focus);
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            background: linear-gradient(135deg, #5b5ee9 0%, #9333ea 100%);
+            /* Slightly darker/richer on hover */
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #cfd8dc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        #response {
+            margin-top: 40px;
+            display: none;
+        }
+
+        .answer-box {
+            background: #f0fdf4;
+            border-left: 6px solid #22c55e;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .answer-box h3 {
+            margin-top: 0;
+            color: #15803d;
+            font-size: 1.25rem;
+            margin-bottom: 12px;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .answer-box p {
+            color: #166534;
+            line-height: 1.7;
+            margin-bottom: 0;
+            font-size: 1.05rem;
+        }
+
+        .error-box {
+            background: #fef2f2;
+            border-left: 6px solid #ef4444;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .error-box h3 {
+            margin-top: 0;
+            color: #b91c1c;
+            font-size: 1.25rem;
+            margin-bottom: 12px;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .error-box p {
+            color: #991b1b;
+            margin-bottom: 0;
+            line-height: 1.6;
+        }
+
+        details {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        details[open] {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        summary {
+            padding: 16px 20px;
+            cursor: pointer;
+            font-weight: 600;
+            background-color: #f1f5f9;
+            color: #475569;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background 0.2s;
+        }
+
+        summary:hover {
+            background-color: #e2e8f0;
+            color: #1e293b;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::after {
+            content: '+';
+            font-size: 1.5rem;
+            line-height: 1;
+            font-weight: 400;
+            color: #94a3b8;
+        }
+
+        details[open] summary::after {
+            content: '-';
+            color: #64748b;
+        }
+
+        .details-content {
+            padding: 20px;
+            border-top: 1px solid #e2e8f0;
+            background: #fff;
+        }
+
+        pre {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 10px 0 0 0;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            font-family: 'Consolas', 'Monaco', monospace;
+            border: 1px solid #1e293b;
+        }
+
+        .label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .spacer {
+            height: 24px;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+                align-items: flex-start;
+                /* Top align on small screens */
+            }
+
+            .container {
+                padding: 25px;
+                margin-top: 20px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            p.subtitle {
+                font-size: 1rem;
+                margin-bottom: 24px;
+            }
+
+            button {
+                font-size: 16px;
+                padding: 14px;
+            }
+
+            .answer-box,
+            .error-box {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Multi-Agent RAG System</h1>
+        <p class="subtitle">Ask questions about your database in natural language</p>
+
+        <div class="input-group">
+            <label for="question">Your Question</label>
+            <textarea id="question" placeholder="e.g., Show me the top 5 customers by order amount..."></textarea>
+        </div>
+
+        <button id="askBtn" onclick="sendQuery()">Ask Question</button>
+
+        <div id="response"></div>
+    </div>
+
+    <script>
+        async function sendQuery() {
+            const questionInput = document.getElementById('question');
+            const askBtn = document.getElementById('askBtn');
+            const responseDiv = document.getElementById('response');
+            const question = questionInput.value;
+
+            if (!question.trim()) {
+                alert("Please enter a question.");
+                return;
+            }
+
+            // UI State: Loading
+            askBtn.disabled = true;
+            askBtn.innerHTML = '<span class="spinner"></span>Processing...'; // Added spinner
+            responseDiv.style.display = 'none';
+            responseDiv.innerHTML = '';
+
+            try {
+                const res = await fetch('http://localhost:8000/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ question: question })
+                });
+
+                const data = await res.json();
+
+                let html = '';
+
+                // 1. Logic vs Error
+                if (data.error) {
+                    html += `<div class="error-box"><h3>Error</h3><p>${data.error}</p></div>`;
+                } else {
+                    html += `<div class="answer-box"><h3>Answer</h3><p>${data.answer}</p></div>`;
+                }
+
+                // 2. Technical Details (Collapsible)
+                html += `
+                <details>
+                    <summary>Technical Details (Debug Info)</summary>
+                    <div class="details-content">
+                        <span class="label">Generated SQL</span>
+                        <pre>${data.generated_sql || 'N/A'}</pre>
+                        
+                        <div class="spacer"></div>
+                        
+                        <span class="label">Raw JSON Response</span>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                </details>
+            `;
+
+                responseDiv.innerHTML = html;
+                responseDiv.style.display = 'block';
+                // Small scroll to response on mobile
+                if (window.innerWidth < 600) {
+                    responseDiv.scrollIntoView({ behavior: 'smooth' });
+                }
+
+            } catch (error) {
+                responseDiv.innerHTML = `<div class="error-box"><h3>Network Error</h3><p>${error.message}</p></div>`;
+                responseDiv.style.display = 'block';
+            } finally {
+                // UI State: Reset
+                askBtn.disabled = false;
+                askBtn.textContent = 'Ask Question';
+            }
+        }
+    </script>
+
+</body>
+
+</html>
