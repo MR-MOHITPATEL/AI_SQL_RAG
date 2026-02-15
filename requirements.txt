@@ -1,7 +1,6 @@
 fastapi
 uvicorn
 psycopg2-binary
-google-generativeai
 faker
 python-dotenv
 pydantic
@@ -9,3 +8,4 @@ pytest
 requests
 httpx
 openai
+
