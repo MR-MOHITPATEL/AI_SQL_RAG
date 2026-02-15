@@ -1,27 +1,21 @@
 import os
 import datetime
-import google.generativeai as genai
+from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
 
 class SQLAgent:
     def __init__(self):
-        self.api_key = os.getenv("GEMINI_API_KEY")
+        self.api_key = os.getenv("GROQ_API_KEY")
         if not self.api_key:
-            # Fallback to OPENAI_API_KEY if GEMINI_API_KEY is not set, 
-            # to be helpful during migration, or just error out. 
-            # Given instructions, better to strict or just look for it.
-            # Let's try to look for it, or checking if user put it in OPENAI_API_KEY var by mistake?
-            # adheres to strict refactor:
-            pass # We will check before config
-        
-        if not self.api_key:
-             raise ValueError("GEMINI_API_KEY environment variable not set")
+             raise ValueError("GROQ_API_KEY environment variable not set")
              
-        genai.configure(api_key=self.api_key)
-        self.model = genai.GenerativeModel('gemini-2.5-flash')
-
+        self.client = OpenAI(
+            api_key=self.api_key,
+            base_url="https://api.groq.com/openai/v1",
+        )
+        self.model = "openai/gpt-oss-120b" # As requested
 
     def generate_sql(self, query: str, schema: dict) -> str:
         """
@@ -50,11 +44,17 @@ class SQLAgent:
         7. If the user request is a greeting (e.g., "hi", "hello"), asking for identity, or NOT related to the database schema, return ONLY the string "NO_QUERY".
         """
         
-        full_prompt = f"{system_prompt}\n\nQuestion: {query}"
-
         try:
-            response = self.model.generate_content(full_prompt)
-            sql = response.text.strip()
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": query}
+                ],
+                temperature=0.1
+            )
+            
+            sql = response.choices[0].message.content.strip()
             
             # Sanitization in case the model ignores the "no markdown" rule
             if sql.startswith("```sql"):

@@ -33,6 +33,10 @@ class QuestionRequest(BaseModel):
 async def read_root():
     return FileResponse("index.html")
 
+@app.get("/schema")
+async def get_schema():
+    return schema_agent.get_schema()
+
 @app.post("/ask")
 async def ask_question(request: QuestionRequest):
     question = request.question

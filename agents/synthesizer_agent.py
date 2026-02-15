@@ -1,17 +1,20 @@
 import os
-import google.generativeai as genai
+from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
 
 class SynthesizerAgent:
     def __init__(self):
-        self.api_key = os.getenv("GEMINI_API_KEY")
+        self.api_key = os.getenv("GROQ_API_KEY")
         if not self.api_key:
-            raise ValueError("GEMINI_API_KEY environment variable not set")
-            
-        genai.configure(api_key=self.api_key)
-        self.model = genai.GenerativeModel('gemini-2.5-flash')
+             raise ValueError("GROQ_API_KEY environment variable not set")
+             
+        self.client = OpenAI(
+            api_key=self.api_key,
+            base_url="https://api.groq.com/openai/v1",
+        )
+        self.model = "openai/gpt-oss-120b" # As requested
 
     def synthesize_answer(self, query: str, sql: str, results: list, schema: dict) -> str:
         """
@@ -42,8 +45,13 @@ class SynthesizerAgent:
         """
 
         try:
-            response = self.model.generate_content(system_prompt)
-            return response.text.strip()
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "user", "content": system_prompt}
+                ]
+            )
+            return response.choices[0].message.content.strip()
             
         except Exception as e:
             return f"Error synthesizing answer: {str(e)}"

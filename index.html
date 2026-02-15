@@ -21,8 +21,6 @@
             --text-light: #6b7280;
             --border-radius: 16px;
             --box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            --input-border: #e5e7eb;
-            --input-focus: #8b5cf6;
         }
 
         body {
@@ -33,23 +31,49 @@
             padding: 20px;
             display: flex;
             justify-content: center;
-            align-items: center;
-            /* Center vertically too */
+            align-items: flex-start;
+            /* Changed from center to allow scrolling if content is long */
             min-height: 100vh;
             box-sizing: border-box;
             background-attachment: fixed;
-            /* Keep gradient fixed on scroll */
+            gap: 20px;
+            flex-wrap: wrap;
         }
 
-        .container {
+        .main-wrapper {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
             width: 100%;
-            max-width: 800px;
+            max-width: 1200px;
+            align-items: flex-start;
+        }
+
+        .schema-container {
+            flex: 1;
+            min-width: 300px;
+            background: var(--card-bg);
+            /* Use same card bg for consistency */
+            padding: 24px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            backdrop-filter: blur(10px);
+            max-height: 85vh;
+            overflow-y: auto;
+            position: sticky;
+            top: 20px;
+            display: none;
+            /* Hidden by default until loaded */
+        }
+
+        .chat-container {
+            flex: 2;
+            min-width: 300px;
             background: var(--card-bg);
             padding: 40px;
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
             backdrop-filter: blur(10px);
-            /* Glassmorphism effect */
             animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -67,9 +91,7 @@
 
         h1 {
             font-family: 'Outfit', sans-serif;
-            /* More stylish font for headers */
             text-align: center;
-            color: #111827;
             margin-bottom: 8px;
             font-weight: 700;
             font-size: 2.5rem;
@@ -77,218 +99,68 @@
             background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            display: inline-block;
             width: 100%;
         }
 
-        p.subtitle {
-            text-align: center;
-            color: var(--text-light);
-            margin-top: 0;
-            margin-bottom: 32px;
-            font-size: 1.1rem;
-        }
-
-        .input-group {
-            margin-bottom: 24px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #374151;
-            font-size: 0.95rem;
-        }
-
-        textarea {
-            width: 100%;
-            padding: 16px;
-            border: 2px solid var(--input-border);
-            border-radius: 12px;
-            font-size: 16px;
-            font-family: inherit;
-            resize: vertical;
-            height: 120px;
-            box-sizing: border-box;
-            transition: all 0.2s ease;
-            background-color: #f9fafb;
-        }
-
-        textarea:focus {
-            outline: none;
-            border-color: var(--input-focus);
-            background-color: #fff;
-            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
-        }
-
-        button {
-            display: block;
-            width: 100%;
-            padding: 16px;
-            background: var(--primary-gradient);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            background: linear-gradient(135deg, #5b5ee9 0%, #9333ea 100%);
-            /* Slightly darker/richer on hover */
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        button:disabled {
-            background: #cfd8dc;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        #response {
-            margin-top: 40px;
-            display: none;
-        }
-
-        .answer-box {
-            background: #f0fdf4;
-            border-left: 6px solid #22c55e;
-            border-radius: 8px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .answer-box h3 {
-            margin-top: 0;
-            color: #15803d;
-            font-size: 1.25rem;
-            margin-bottom: 12px;
+        h2.section-title {
             font-family: 'Outfit', sans-serif;
-        }
-
-        .answer-box p {
-            color: #166534;
-            line-height: 1.7;
-            margin-bottom: 0;
-            font-size: 1.05rem;
-        }
-
-        .error-box {
-            background: #fef2f2;
-            border-left: 6px solid #ef4444;
-            border-radius: 8px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .error-box h3 {
+            font-size: 1.5rem;
+            color: #4b5563;
             margin-top: 0;
-            color: #b91c1c;
-            font-size: 1.25rem;
-            margin-bottom: 12px;
-            font-family: 'Outfit', sans-serif;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
         }
 
-        .error-box p {
-            color: #991b1b;
-            margin-bottom: 0;
-            line-height: 1.6;
-        }
-
-        details {
+        .schema-table {
+            margin-bottom: 24px;
             background: #f8fafc;
-            border: 1px solid #e2e8f0;
             border-radius: 12px;
             overflow: hidden;
-            margin-top: 20px;
-            transition: all 0.3s;
+            border: 1px solid #e2e8f0;
         }
 
-        details[open] {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        summary {
-            padding: 16px 20px;
-            cursor: pointer;
+        .schema-table-header {
+            background: #e2e8f0;
+            padding: 10px 16px;
             font-weight: 600;
-            background-color: #f1f5f9;
-            color: #475569;
-            list-style: none;
+            color: #334155;
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            transition: background 0.2s;
+            align-items: center;
         }
 
-        summary:hover {
-            background-color: #e2e8f0;
+        .schema-table-body {
+            padding: 10px 16px;
+        }
+
+        .column-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+
+        .column-item:last-child {
+            border-bottom: none;
+        }
+
+        .col-name {
+            font-weight: 500;
             color: #1e293b;
         }
 
-        summary::-webkit-details-marker {
-            display: none;
-        }
-
-        summary::after {
-            content: '+';
-            font-size: 1.5rem;
-            line-height: 1;
-            font-weight: 400;
-            color: #94a3b8;
-        }
-
-        details[open] summary::after {
-            content: '-';
+        .col-type {
+            font-family: 'Consolas', monospace;
             color: #64748b;
-        }
-
-        .details-content {
-            padding: 20px;
-            border-top: 1px solid #e2e8f0;
+            font-size: 0.8em;
             background: #fff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
         }
 
-        pre {
-            background: #0f172a;
-            color: #e2e8f0;
-            padding: 20px;
-            border-radius: 8px;
-            overflow-x: auto;
-            margin: 10px 0 0 0;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            font-family: 'Consolas', 'Monaco', monospace;
-            border: 1px solid #1e293b;
-        }
-
-        .label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .spacer {
-            height: 24px;
-        }
-
-        /* Loading Spinner */
         .spinner {
             display: inline-block;
             width: 20px;
@@ -307,36 +179,146 @@
             }
         }
 
-        /* Responsive Design */
-        @media (max-width: 600px) {
-            body {
-                padding: 15px;
-                align-items: flex-start;
-                /* Top align on small screens */
+        /* ... existing styles ... */
+        .subtitle {
+            text-align: center;
+            color: var(--text-light);
+            margin-top: 0;
+            margin-bottom: 32px;
+            font-size: 1.1rem;
+        }
+
+        .input-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            height: 120px;
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+            background-color: #f9fafb;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        button:disabled {
+            background: #cfd8dc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #response {
+            margin-top: 40px;
+            display: none;
+        }
+
+        .answer-box {
+            background: #f0fdf4;
+            border-left: 6px solid #22c55e;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .error-box {
+            background: #fef2f2;
+            border-left: 6px solid #ef4444;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        details {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        summary {
+            padding: 16px 20px;
+            cursor: pointer;
+            font-weight: 600;
+            background-color: #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary:hover {
+            background-color: #e2e8f0;
+        }
+
+        .details-content {
+            padding: 20px;
+            border-top: 1px solid #e2e8f0;
+            background: #fff;
+        }
+
+        pre {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 10px 0 0 0;
+        }
+
+        @media (max-width: 900px) {
+            .main-wrapper {
+                flex-direction: column-reverse;
             }
 
-            .container {
-                padding: 25px;
-                margin-top: 20px;
+            /* Stack: Chat on top, Schema below on mobile */
+            .schema-container {
+                position: static;
+                width: 100%;
+                box-sizing: border-box;
             }
 
-            h1 {
-                font-size: 2rem;
-            }
-
-            p.subtitle {
-                font-size: 1rem;
-                margin-bottom: 24px;
-            }
-
-            button {
-                font-size: 16px;
-                padding: 14px;
-            }
-
-            .answer-box,
-            .error-box {
-                padding: 18px;
+            .chat-container {
+                width: 100%;
+                box-sizing: border-box;
             }
         }
     </style>
@@ -344,21 +326,108 @@
 
 <body>
 
-    <div class="container">
-        <h1>Multi-Agent RAG System</h1>
-        <p class="subtitle">Ask questions about your database in natural language</p>
-
-        <div class="input-group">
-            <label for="question">Your Question</label>
-            <textarea id="question" placeholder="e.g., Show me the top 5 customers by order amount..."></textarea>
+    <div class="main-wrapper">
+        <!-- Schema Section -->
+        <div id="schemaContainer" class="schema-container">
+            <h2 class="section-title">Database Schema</h2>
+            <div id="schemaContent">
+                <!-- Schema will be injected here -->
+                <p style="color: #6b7280; text-align: center;">Loading schema...</p>
+            </div>
         </div>
 
-        <button id="askBtn" onclick="sendQuery()">Ask Question</button>
+        <!-- Chat Section -->
+        <div class="chat-container">
+            <h1>Multi-Agent RAG System</h1>
+            <p class="subtitle">Ask questions about your database in natural language</p>
 
-        <div id="response"></div>
+            <div class="input-group">
+                <label for="question">Your Question</label>
+                <textarea id="question" placeholder="e.g., Show me the top 5 customers by order amount..."></textarea>
+            </div>
+
+            <button id="askBtn" onclick="sendQuery()">Ask Question</button>
+
+            <div id="response"></div>
+        </div>
     </div>
 
     <script>
+        // Fetch Schema on Load
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Check if running from file system
+            if (window.location.protocol === 'file:') {
+                const container = document.getElementById('schemaContainer');
+                const content = document.getElementById('schemaContent');
+                content.innerHTML = `
+                    <div style="color: #b91c1c; background: #fef2f2; padding: 15px; border-radius: 8px; border: 1px solid #ef4444;">
+                        <strong>⚠️ Access Warning</strong><br>
+                        It looks like you opened this file directly.<br>
+                        Please access via <code>http://localhost:8000/</code> to verify the backend connection.
+                    </div>
+                `;
+                container.style.display = 'block';
+                return;
+            }
+
+            try {
+                const res = await fetch('/schema');
+                if (!res.ok) throw new Error(`Server returned ${res.status}`);
+                const data = await res.json();
+                renderSchema(data);
+            } catch (err) {
+                console.error("Failed to fetch schema:", err);
+                // Show detailed error
+                document.getElementById('schemaContent').innerHTML = `
+                    <div style="color: #ef4444; padding: 10px; text-align: center;">
+                        <p style="font-weight: bold; margin-bottom: 5px;">Failed to load schema</p>
+                        <p style="font-size: 0.8em;">${err.message}</p>
+                        <p style="font-size: 0.8em; color: #666;">Is the backend server running?</p>
+                    </div>
+                `;
+                document.getElementById('schemaContainer').style.display = 'block';
+            }
+        });
+
+        function renderSchema(schema) {
+            const container = document.getElementById('schemaContent');
+            const wrapper = document.getElementById('schemaContainer');
+
+            if (!schema || !schema.tables) {
+                container.innerHTML = '<p>No schema information available.</p>';
+                wrapper.style.display = 'block';
+                return;
+            }
+
+            let html = '';
+            for (const [tableName, tableInfo] of Object.entries(schema.tables)) {
+                html += `
+                    <div class="schema-table">
+                        <div class="schema-table-header">
+                            <span>${tableName}</span>
+                        </div>
+                        <div class="schema-table-body">
+                `;
+
+                tableInfo.columns.forEach(col => {
+                    html += `
+                        <div class="column-item">
+                            <span class="col-name" title="${col.description || ''}">${col.name}</span>
+                            <span class="col-type">${col.type}</span>
+                        </div>
+                    `;
+                });
+
+                html += `
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+            wrapper.style.display = 'block';
+        }
+
         async function sendQuery() {
             const questionInput = document.getElementById('question');
             const askBtn = document.getElementById('askBtn');
@@ -372,50 +441,42 @@
 
             // UI State: Loading
             askBtn.disabled = true;
-            askBtn.innerHTML = '<span class="spinner"></span>Processing...'; // Added spinner
+            askBtn.innerHTML = '<span class="spinner"></span>Processing...';
             responseDiv.style.display = 'none';
             responseDiv.innerHTML = '';
 
             try {
                 const res = await fetch('/ask', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ question: question })
                 });
 
                 const data = await res.json();
-
                 let html = '';
 
-                // 1. Logic vs Error
                 if (data.error) {
                     html += `<div class="error-box"><h3>Error</h3><p>${data.error}</p></div>`;
                 } else {
                     html += `<div class="answer-box"><h3>Answer</h3><p>${data.answer}</p></div>`;
                 }
 
-                // 2. Technical Details (Collapsible)
                 html += `
                 <details>
-                    <summary>Technical Details (Debug Info)</summary>
+                    <summary>Technical Details <span>+</span></summary>
                     <div class="details-content">
                         <span class="label">Generated SQL</span>
                         <pre>${data.generated_sql || 'N/A'}</pre>
-                        
-                        <div class="spacer"></div>
-                        
+                        <div style="height: 24px;"></div>
                         <span class="label">Raw JSON Response</span>
                         <pre>${JSON.stringify(data, null, 2)}</pre>
                     </div>
                 </details>
-            `;
+                `;
 
                 responseDiv.innerHTML = html;
                 responseDiv.style.display = 'block';
-                // Small scroll to response on mobile
-                if (window.innerWidth < 600) {
+                if (window.innerWidth < 900) {
                     responseDiv.scrollIntoView({ behavior: 'smooth' });
                 }
 
@@ -423,13 +484,11 @@
                 responseDiv.innerHTML = `<div class="error-box"><h3>Network Error</h3><p>${error.message}</p></div>`;
                 responseDiv.style.display = 'block';
             } finally {
-                // UI State: Reset
                 askBtn.disabled = false;
                 askBtn.textContent = 'Ask Question';
             }
         }
     </script>
-
 </body>
 
 </html>
